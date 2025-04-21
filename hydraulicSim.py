@@ -1,4 +1,5 @@
 from math import pi, floor
+import numpy as np
 
 # Units:
 # Flow rates (Q) in m^3/h
@@ -185,7 +186,6 @@ def plot_given_curves():
 #
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
-    import numpy as np
 
     plot_given_curves()
 
