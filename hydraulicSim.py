@@ -111,7 +111,7 @@ def simul(x, t_values, Q_VC):
     pump_enabled = False
 
     for t in t_values:
-        
+
         if (i < n_duty_cycles):
             if (not pump_enabled and t >= x[i]):
                 pump_enabled = True
@@ -198,8 +198,8 @@ if __name__ == "__main__":
     # Get the results of the simulation when Q_VC = Q_VC_Max
     Q_P_values, z_values, power_values, cumulative_energy_values, cumulative_cost_values = simul(x, t_values, Q_VC_Max)
 
-    print(f"Cost: {cumulative_cost_values[39999]:.2f} EUR")
-    print(f"Total electrical energy: {cumulative_energy_values[39999]:.2f} kWh")
+    print(f"Cost: {cumulative_cost_values[-1]:.2f} EUR")
+    print(f"Total electrical energy: {cumulative_energy_values[-1]:.1f} kWh")
     
     plt.figure()
     plt.plot(t_values, Q_P_values, label="Q_P_values")
