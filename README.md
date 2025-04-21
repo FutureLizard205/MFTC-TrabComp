@@ -13,19 +13,6 @@ Academic Year: 2024/25
 License: MIT
 
 ## 🚀 Getting Started
-### 🔧 Prerequisites
-
-Make sure you have Python 3.11 installed on your system. To check the installed version, run:
-
-```bash
-python --version
-```
-
-Install the required dependencies:
-
-```bash
-pip install -r requirements.txt
-```
 
 ### ↙️ Clone the Repo
 
@@ -36,6 +23,22 @@ git clone https://github.com/FutureLizard205/MFTC-TrabComp.git
 ```
 
 Alternatively, you can [download the repo's files as a ZIP archive](https://github.com/FutureLizard205/MFTC-TrabComp/archive/refs/heads/main.zip) and extract them to an empty folder.
+
+And open a terminal inside of the repo's folder.
+
+### 🔧 Prerequisites
+
+Make sure you have Python 3.11 - 3.13 installed on your system (other versions haven't been tested, but may work as well). To check the installed version, run:
+
+```bash
+python --version
+```
+
+Install the required dependencies:
+
+```bash
+pip install -r requirements.txt
+```
 
 ### ⚙️ Run the Simulation
 

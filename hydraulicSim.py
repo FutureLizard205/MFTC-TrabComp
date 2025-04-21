@@ -32,7 +32,6 @@ a2 = - 0.002
 def h_P(Q):
     return a1 + a2 * Q**2
 
-
 #
 # Consumption Curves
 #
@@ -51,8 +50,6 @@ def Q_VC_Max(t):
 def Q_VC_Min(t):
     return 1.19333e-7 * t**7 - 6.54846e-5 * t**6 + 4.1432e-3 * t**5 - 0.100585 * t**4 + 1.05575 * t**3 - 3.85966 * t**2 - 1.32657 * t + 75.393
 
-
-
 #
 # Water Tank
 #
@@ -61,10 +58,9 @@ z_lim = [152, 157]      # Water level limits
 z_abslim = [150, 159]   # Water level absolute limits
 Area = 185              # Tank's Area [m^2]
 
-
 #
 # Inline Losses 
-# h_L = ( 32fL / d^5 g pi^2 ) Q^2
+# h_L = ( 32fL / d^5 g pi^2 ) Q^2 = k Q^2
 #
 L1 = 2500
 L2 = 5000
@@ -74,10 +70,9 @@ k1 = (32 * f * L1) / (d**5 * g * pi**2)
 k2 = (32 * f * L2) / (d**5 * g * pi**2)
 
 
-
-
-
-
+#
+# This function calculates the flow rate of the pump, when it is enabled
+#
 def Pump_Enabled_Q(t, z, Q_VC):
     A = a2 - k1 - k2 - 1/ (2 * g * Area**2)
     B = 2 * k2 * Q_R(t) + (Q_R(t) + Q_VC(t)) / (g * Area**2)
@@ -85,9 +80,14 @@ def Pump_Enabled_Q(t, z, Q_VC):
     roots = np.roots([A, B, C])
     return next(x for x in roots if x > 0 and np.isreal(x))     # Return the first positive real root (throw an error if none found)
 
+
+#
+# This function calculates the next water level of the tank
+#
 def z_next(Q_P, z, t, delta_t, Q_VC):
     dzdt = (Q_P - Q_R(t) - Q_VC(t)) / Area
     return z + dzdt * delta_t
+
 
 #
 # Cost of electricity, divided in 
@@ -95,39 +95,17 @@ def z_next(Q_P, z, t, delta_t, Q_VC):
 #
 Tarif = [0.0713, 0.0651, 0.0593, 0.0778, 0.0851, 0.0923, 0.0968, 0.10094, 0.10132, 0.10230, 0.10189, 0.10132]
 
-def costcalc(x, t_values, Q_P_values):
-    delta_t = t_values[1] - t_values[0]
-    cost = 0
-    i = 0
-    j = 0
-    pump_enabled = False
-    for t in t_values:
-        if (len(x) > i):   
-            if (pump_enabled and t >= x[i] + x[i-1]):
-                pump_enabled = False
-                i = i + 1
-        
-        if (len(x) > i):
-            if (not pump_enabled and t >= x[i]):
-                pump_enabled = True
-                i = i + 1
-
-        if (pump_enabled):
-            if (t < 24):    # To prevent float impercision above 24 (oob of the array)
-                Tarif_i = Tarif[floor(abs(t)/2)]    # abs to prevent negative number from underflowing
-
-            cost += ( (rho * g / (efficiency)) * Tarif_i * delta_t * (a1 * Q_P_values[j] + a2 * Q_P_values[j]**3) ) / (1000 * 3600**3)
-        
-        j += 1
-
-    return cost
-
 
 def simul(x, t_values, Q_VC):
     delta_t = t_values[1] - t_values[0]
     z = z_i
     z_values = []
     Q_P_values = []
+    power_values = []
+    energy = 0
+    cumulative_energy_values = []
+    cost = 0
+    cumulative_cost_values = []
     i = 0
     pump_enabled = False
     for t in t_values:
@@ -145,13 +123,28 @@ def simul(x, t_values, Q_VC):
 
         if (pump_enabled):
             Q_P = Pump_Enabled_Q(t, z, Q_VC)
+
+            if (t < 24):    # To prevent float impercision above 24 (oob of the array)
+                Tarif_i = Tarif[floor(abs(t)/2)]    # abs to prevent negative number from underflowing
+
+            power = (rho * g / efficiency) * Q_P * h_P(Q_P) / (3600**3 * 1000) # in kW
+            power_values.append(power) 
+            energy += power * delta_t # in kWh
+            cumulative_energy_values.append(energy)
+            cost += power * delta_t * Tarif_i # in EUR
+            cumulative_cost_values.append(cost)
+
         else:
             Q_P = 0
+            power_values.append(0)
+            cumulative_energy_values.append(energy)
+            cumulative_cost_values.append(cost)
+
         Q_P_values.append(Q_P)
         z = z_next(Q_P, z, 0, delta_t, Q_VC)
         z_values.append(z)
     
-    return costcalc(x, t_values, Q_P_values), Q_P_values, z_values
+    return Q_P_values, z_values, power_values, cumulative_energy_values, cumulative_cost_values
 
 
 #
@@ -167,8 +160,8 @@ def plot_given_curves():
     plt.plot(t_values, Q_VC_Min(t_values), label="Q_VC_Min", linestyle="--")
     plt.fill_between(t_values, Q_VC_Min(t_values), Q_VC_Max(t_values), where=None, color='orange', alpha=0.3)
     plt.xlim(0, 24)
-    plt.xlabel("t / h") 
-    plt.ylabel("Q / m^3 h^-1")
+    plt.xlabel("t (h)") 
+    plt.ylabel("Q (m^3 h^-1)")
     plt.title("Consumption Curves")
     plt.grid(True)
     plt.legend()
@@ -179,8 +172,8 @@ def plot_given_curves():
     plt.plot(Q_values[h_values > 0], h_values[h_values > 0], label="")
     plt.xlim(0)
     plt.ylim(0)
-    plt.xlabel("Q / m^3 h^-1")
-    plt.ylabel("h_P / m")
+    plt.xlabel("Q (m^3 h^-1)")
+    plt.ylabel("h_P (m)")
     plt.title("Pump Equation")
     plt.grid(True)
     plt.show(block=False)
@@ -204,19 +197,23 @@ if __name__ == "__main__":
     x = [1, 2] + [5, 3] + [10, 3] + [16, 3]
 
     # Get the results of the simulation when Q_VC = Q_VC_Max
-    costEUR, Q_P_values, z_values = simul(x, t_values, Q_VC_Max)
+    Q_P_values, z_values, power_values, cumulative_energy_values, cumulative_cost_values = simul(x, t_values, Q_VC_Max)
 
-    print(f"Cost: {costEUR:.2f} EUR")
+    print(f"Cost: {cumulative_cost_values[39999]:.2f} EUR")
+    print(f"Total electrical energy: {cumulative_energy_values[39999]:.2f} kWh")
     
     plt.figure()
     plt.plot(t_values, Q_P_values, label="Q_P_values")
     plt.plot(t_values, z_values, label="z_values")
+    plt.plot(t_values, power_values, label="power_values")
+    #plt.plot(t_values, cumulative_energy_values, label="cumulative_energy_values")
+    #plt.plot(t_values, cumulative_cost_values, label="cumulative_cost_values")
     plt.axhline(y=z_lim[0], color='purple', linestyle=':', linewidth=2)
     plt.axhline(y=z_lim[1], color='purple', linestyle=':', linewidth=2)
     plt.xlim(0, 24)
-    plt.ylim(150)
-    plt.xlabel("t")
-    plt.ylabel("z / m or Q_P / m^3 h^-1")
+    plt.ylim(140)
+    plt.xlabel("t (h)")
+    plt.ylabel("z (m) or Q_P (m^3 h^-1) or Electrical Power (kW)")
     plt.title("Result")
     plt.grid(True)
     plt.legend()
