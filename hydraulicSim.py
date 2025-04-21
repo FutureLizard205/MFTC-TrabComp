@@ -107,19 +107,18 @@ def simul(x, t_values, Q_VC):
     cost = 0
     cumulative_cost_values = []
     i = 0
+    n_duty_cycles = len(x) // 2
     pump_enabled = False
+
     for t in t_values:
         
-        if (len(x) > i):
-            if (pump_enabled and t >= x[i] + x[i-1]):
-                pump_enabled = False
-                i = i + 1
-        
-        if (len(x) > i):
+        if (i < n_duty_cycles):
             if (not pump_enabled and t >= x[i]):
                 pump_enabled = True
-                i = i + 1
-
+            
+            if (pump_enabled and t >= x[i] + x[i + n_duty_cycles]): 
+                pump_enabled = False
+                i += 1
 
         if (pump_enabled):
             Q_P = Pump_Enabled_Q(t, z, Q_VC)
@@ -194,7 +193,7 @@ if __name__ == "__main__":
     t_values = np.linspace(0, 24, 40000)
 
     # Pump decision variable:
-    x = [1, 2] + [5, 3] + [10, 3] + [16, 3]
+    x = [1, 5, 10, 16] + [2, 3, 3, 3]
 
     # Get the results of the simulation when Q_VC = Q_VC_Max
     Q_P_values, z_values, power_values, cumulative_energy_values, cumulative_cost_values = simul(x, t_values, Q_VC_Max)
