@@ -110,6 +110,7 @@ def simul(x, t_values, Q_VC):
     i = 0
     n_duty_cycles = len(x) // 2
     pump_enabled = False
+    Tarif_i = Tarif[0]
 
     for t in t_values:
 
