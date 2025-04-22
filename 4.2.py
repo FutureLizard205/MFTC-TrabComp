@@ -6,11 +6,11 @@ import hydraulicSim
 if __name__ == '__main__':
 
     # Number of times the pump turns on
-    n_duty_cycles = 3
+    n_duty_cycles = 4
 
     # Initial guesses
-    x0_Min = [0.1, 7.352, 14.925] + [4, 4.077, 2.073]
-    x0_Max = [0.1, 7.352, 14.925] + [4, 4.077, 2.073]
+    x0_Min = [0.1, 7.4, 11, 12.9] + [5, 3, 1.3, 0.02]
+    x0_Max = [0.24, 7.06, 10.8, 14.92] + [4.98, 3.11, 1.09, 0.6]
 
     FD_dx = 1.E-4
     
@@ -61,8 +61,8 @@ if __name__ == '__main__':
     bounds = Bounds(0, 24)
     
     # Run the optimization
-    result_Max = minimize(f_Max, x0_Max, constraints=[nonlin_constraint_x, c2, water_level_constraint_Max], bounds=bounds, method='SLSQP', jac='2-point', options={'ftol':0.01,'maxiter':20,'eps':FD_dx,'finite_diff_rel_step': FD_dx,'iprint': 3, 'disp': True})
-    result_Min = minimize(f_Min, x0_Min, constraints=[nonlin_constraint_x, c2, water_level_constraint_Min], bounds=bounds, method='SLSQP', jac='2-point', options={'ftol':0.01,'maxiter':20,'eps':FD_dx,'finite_diff_rel_step': FD_dx,'iprint': 3, 'disp': True})
+    result_Max = minimize(f_Max, x0_Max, constraints=[nonlin_constraint_x, c2, water_level_constraint_Max], bounds=bounds, method='SLSQP', jac='2-point', options={'ftol':0.01,'maxiter':40,'eps':FD_dx,'finite_diff_rel_step': FD_dx,'iprint': 3, 'disp': True})
+    result_Min = minimize(f_Min, x0_Min, constraints=[nonlin_constraint_x, c2, water_level_constraint_Min], bounds=bounds, method='SLSQP', jac='2-point', options={'ftol':0.01,'maxiter':40,'eps':FD_dx,'finite_diff_rel_step': FD_dx,'iprint': 3, 'disp': True})
     
     print("Para Q_VC_Min:")
     print(result_Min)
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     plt.plot(t_values, Q_P_values_Min, label="Q_P (m^3 h^-1)")
     plt.plot(t_values, z_values_Min, label="z (m)")
     plt.plot(t_values, power_values_Min, label="Power (kW)")
-    plt.plot(t_values, cumulative_energy_values_Min, label="Cumulative Energy (x10^4 W)")
+    plt.plot(t_values, cumulative_energy_values_Min, label="Cumulative Energy (x10^4 Wh)")
     plt.plot(t_values, cumulative_cost_values_Min, label="Cumulative Cost (€)")
     plt.axhline(y=hydraulicSim.z_abslim[0], color='purple', linestyle=':', linewidth=2)
     plt.fill_between(t_values, hydraulicSim.z_lim[0], hydraulicSim.z_abslim[0], where=None, color='orange', alpha=0.3)
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     plt.plot(t_values, Q_P_values_Max, label="Q_P (m^3 h^-1)")
     plt.plot(t_values, z_values_Max, label="z (m)")
     plt.plot(t_values, power_values_Max, label="Power (kW)")
-    plt.plot(t_values, cumulative_energy_values_Max, label="Cumulative Energy (x10^4 W)")
+    plt.plot(t_values, cumulative_energy_values_Max, label="Cumulative Energy (x10^4 Wh)")
     plt.plot(t_values, cumulative_cost_values_Max, label="Cumulative Cost (€)")
     plt.axhline(y=hydraulicSim.z_abslim[0], color='purple', linestyle=':', linewidth=2)
     plt.fill_between(t_values, hydraulicSim.z_lim[0], hydraulicSim.z_abslim[0], where=None, color='orange', alpha=0.3)

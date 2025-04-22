@@ -6,11 +6,11 @@ import hydraulicSim
 if __name__ == '__main__':
     
     # Number of times the pump turns on
-    n_duty_cycles = 3
+    n_duty_cycles = 6
 
     # Initial guesses
-    x0_Min = [0.1, 7.352, 14.925] + [4, 4.077, 2.073]
-    x0_Max = [0.1, 7.352, 14.925] + [4, 4.077, 2.073]
+    x0_Min =  [0.001, 6.99, 8.908, 10.795, 12.76, 15] + [5.854, 1.01, 1.092, 1.205, 1.24, 0.648]
+    x0_Max =  [0.001, 6.99, 8.878, 10.75, 12.71, 14.9] + [5.9, 1.01, 1.122, 1.25, 1.29, 1.05]
 
     FD_dx = 1.E-4
     
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     plt.plot(t_values, Q_P_values_Min, label="Q_P (m^3 h^-1)")
     plt.plot(t_values, z_values_Min, label="z (m)")
     plt.plot(t_values, power_values_Min, label="Power (kW)")
-    plt.plot(t_values, cumulative_energy_values_Min, label="Cumulative Energy (x10^4 W)")
+    plt.plot(t_values, cumulative_energy_values_Min, label="Cumulative Energy (x10^4 Wh)")
     plt.plot(t_values, cumulative_cost_values_Min, label="Cumulative Cost (€)")
     plt.axhline(y=hydraulicSim.z_lim[0], color='purple', linestyle=':', linewidth=2)
     plt.axhline(y=hydraulicSim.z_lim[1], color='purple', linestyle=':', linewidth=2)
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     plt.plot(t_values, Q_P_values_Max, label="Q_P (m^3 h^-1)")
     plt.plot(t_values, z_values_Max, label="z (m)")
     plt.plot(t_values, power_values_Max, label="Power (kW)")
-    plt.plot(t_values, cumulative_energy_values_Max, label="Cumulative Energy (x10^4 W)")
+    plt.plot(t_values, cumulative_energy_values_Max, label="Cumulative Energy (x10^4 Wh)")
     plt.plot(t_values, cumulative_cost_values_Max, label="Cumulative Cost (€)")
     plt.axhline(y=hydraulicSim.z_lim[0], color='purple', linestyle=':', linewidth=2)
     plt.axhline(y=hydraulicSim.z_lim[1], color='purple', linestyle=':', linewidth=2)
