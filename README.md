@@ -42,11 +42,24 @@ pip install -r requirements.txt
 
 ### ⚙️ Run the Simulation
 
-In order to run the simulation, just run the python file:
+In order to run the optimization of the first simulation (task 4.1), just run the 4.1.py file:
+
+```bash
+python 4.1.py
+```
+
+In order to run the optimization of the second simulation (task 4.2, where there is some additional tolerance in the water level, but with added cost), just run the 4.2.py file:
+
+```bash
+python 4.2.py
+```
+
+Both should output the results of the optimal decision variable found (for the given initial guess 'x0') and the resulting total cost and energy in the terminal, as well as graphs with the water level, costs, energy consumption, pump flow rate and power over time.
+
+#### Custom Simulation
+
+In order to run a singular simulation with a certain decision variable x, edit the x variable in the hydraulicSim.py file and run it:
 
 ```bash
 python hydraulicSim.py
 ```
-
----
-<b>This is still a WIP. Here be Dragons!
