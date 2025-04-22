@@ -111,6 +111,7 @@ def simul(x, t_values, Q_VC):
     n_duty_cycles = len(x) // 2
     pump_enabled = False
     Tarif_i = Tarif[0]
+    t_exced_lim = -1
 
     for t in t_values:
 
@@ -132,17 +133,20 @@ def simul(x, t_values, Q_VC):
             power_values.append(power) 
             energy += power * delta_t # in kWh
             cumulative_energy_values.append(energy)
-            cost += power * delta_t * Tarif_i # in EUR
-            cumulative_cost_values.append(cost)
+            cost += power * delta_t * Tarif_i # in EUR        
 
         else:
             Q_P = 0
             power_values.append(0)
             cumulative_energy_values.append(energy)
-            cumulative_cost_values.append(cost)
+        
+        z = z_next(Q_P, z, 0, delta_t, Q_VC)
+        if ((z < z_lim[0] or z > z_lim[1]) and t >= t_exced_lim + 1):
+                t_exced_lim = t
+                cost += 5
 
         Q_P_values.append(Q_P)
-        z = z_next(Q_P, z, 0, delta_t, Q_VC)
+        cumulative_cost_values.append(cost)
         z_values.append(z)
     
     return Q_P_values, z_values, power_values, cumulative_energy_values, cumulative_cost_values

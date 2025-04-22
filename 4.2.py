@@ -6,27 +6,16 @@ import hydraulicSim
 if __name__ == '__main__':
 
     # Number of times the pump turns on
-    # n_duty_cycles = 2
-
-    # Initial guess
-    # x0 = [2, 14, 2, 3]
-
-    # Number of times the pump turns on
     n_duty_cycles = 5
 
     # Initial guess
-    #x0 = np.concatenate([np.linspace(1, 23, n_duty_cycles), np.full(n_duty_cycles, 0.8)])
-    #print(x0)
-
     x0 =  [1.761, 11, 13, 14.9, 17.3] + [7.1, 2, 0.7, 0.5, 0.6]
 
-
     FD_dx = 1.E-4
-
     
     # Objective function
     def f(x):
-        t_values = np.linspace(0, 24, 120000)
+        t_values = np.linspace(0, 24, 40000)
         Q_P_values, z_values, power_values, cumulative_energy_values, cumulative_cost_values = hydraulicSim.simul(x, t_values, hydraulicSim.Q_VC_Max)
         return cumulative_cost_values[-1]
 
@@ -40,22 +29,13 @@ if __name__ == '__main__':
 
     # Water level constraint
     def fun_water_level_constraint(x):
-        t_values = np.linspace(0, 24, 120000)
+        t_values = np.linspace(0, 24, 40000)
         Q_P_values, z_values, power_values, cumulative_energy_values, cumulative_cost_values = hydraulicSim.simul(x, t_values, hydraulicSim.Q_VC_Max)
         
         return z_values
 
-    water_level_constraint = NonlinearConstraint(fun_water_level_constraint, lb=hydraulicSim.z_lim[0], ub=hydraulicSim.z_lim[1], jac='2-point', hess=BFGS(), keep_feasible=False, finite_diff_rel_step = FD_dx)
+    water_level_constraint = NonlinearConstraint(fun_water_level_constraint, lb=hydraulicSim.z_abslim[0], ub=hydraulicSim.z_abslim[1], jac='2-point', hess=BFGS(), keep_feasible=False, finite_diff_rel_step = FD_dx)
  
-
-    # --- Constraint 2: x[i] + x[i+n] <= 24  for i in 0..n-1
-    # Build a linear constraint matrix
-    #A = np.zeros((n_duty_cycles, 2*n_duty_cycles))
-    #for i in range(n_duty_cycles):
-    #    A[i, i] = 1      # x[i]
-    #    A[i, i+n_duty_cycles] = 1    # x[i+n]
-    #
-    #lin_con = LinearConstraint(A, lb=-np.inf, ub=24, )
 
     def fun_constr_2(x):
         constr2 = []
@@ -70,7 +50,7 @@ if __name__ == '__main__':
 
     
     # Run the optimization
-    result = minimize(f, x0, constraints=[nonlin_constraint_x, c2, water_level_constraint], bounds=bounds, method='SLSQP', jac='2-point', options={'ftol':0.01,'maxiter':300,'eps':FD_dx,'finite_diff_rel_step': FD_dx,'iprint': 3, 'disp': True})
+    result = minimize(f, x0, constraints=[nonlin_constraint_x, c2, water_level_constraint], bounds=bounds, method='SLSQP', jac='2-point', options={'ftol':0.01,'maxiter':10,'eps':FD_dx,'finite_diff_rel_step': FD_dx,'iprint': 3, 'disp': True})
 
     print(result)
 
@@ -91,8 +71,12 @@ if __name__ == '__main__':
     plt.plot(t_values, power_values, label="power_values")
     #plt.plot(t_values, cumulative_energy_values, label="cumulative_energy_values")
     #plt.plot(t_values, cumulative_cost_values, label="cumulative_cost_values")
-    plt.axhline(y=hydraulicSim.z_lim[0], color='purple', linestyle=':', linewidth=2)
-    plt.axhline(y=hydraulicSim.z_lim[1], color='purple', linestyle=':', linewidth=2)
+    #plt.axhline(y=hydraulicSim.z_lim[0], color='purple', linestyle=':', linewidth=2)
+    plt.axhline(y=hydraulicSim.z_abslim[0], color='purple', linestyle=':', linewidth=2)
+    plt.fill_between(t_values, hydraulicSim.z_lim[0], hydraulicSim.z_abslim[0], where=None, color='orange', alpha=0.3)
+    #plt.axhline(y=hydraulicSim.z_lim[1], color='purple', linestyle=':', linewidth=2)
+    plt.axhline(y=hydraulicSim.z_abslim[1], color='purple', linestyle=':', linewidth=2)
+    plt.fill_between(t_values, hydraulicSim.z_abslim[1], hydraulicSim.z_lim[1], where=None, color='orange', alpha=0.3)
     plt.xlim(0, 24)
     plt.ylim(140)
     plt.xlabel("t (h)")
