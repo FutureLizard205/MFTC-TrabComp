@@ -140,7 +140,7 @@ def simul(x, t_values, Q_VC):
             power_values.append(0)
             cumulative_energy_values.append(energy)
         
-        z = z_next(Q_P, z, 0, delta_t, Q_VC)
+        z = z_next(Q_P, z, t, delta_t, Q_VC)
         if ((z < z_lim[0] or z > z_lim[1]) and t >= t_exced_lim + 1):
                 t_exced_lim = t
                 cost += 5
@@ -200,8 +200,8 @@ if __name__ == "__main__":
     # Pump decision variable:
     x = [1, 5, 10, 16] + [2, 3, 3, 3]
 
-    # Get the results of the simulation when Q_VC = Q_VC_Max
-    Q_P_values, z_values, power_values, cumulative_energy_values, cumulative_cost_values = simul(x, t_values, Q_VC_Max)
+    # Get the results of the simulation when Q_VC = Q_VC_Min
+    Q_P_values, z_values, power_values, cumulative_energy_values, cumulative_cost_values = simul(x, t_values, Q_VC_Min)
 
     print(f"Cost: {cumulative_cost_values[-1]:.2f} EUR")
     print(f"Total electrical energy: {cumulative_energy_values[-1]:.1f} kWh")
